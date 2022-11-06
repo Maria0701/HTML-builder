@@ -21,7 +21,6 @@ const copyDir = (src, dest, callback) => {
                     if (err) {
                         callback(err);
                     } else{
-
                         const curSrc = path.resolve(copySrc, item);
                         const curDest = path.resolve(copyDest, item);
                         if (stat.isFile()) {

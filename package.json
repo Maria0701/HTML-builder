@@ -14,5 +14,8 @@
   "devDependencies": {
     "@types/node": "^16.11.4",
     "eslint": "^7.32.0"
+  },
+  "dependencies": {
+    "async": "^3.2.4"
   }
 }
