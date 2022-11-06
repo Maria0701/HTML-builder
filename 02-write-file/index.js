@@ -32,16 +32,17 @@ function create(content) {
     });
 };
 
-stdout.write('Привет! Напиши что-нибудь! \n');
+stdout.write('Привет! Напиши что-нибудь!\n');
 
 stdin.on('data', data => {
-    const dataString = data.toString();
-    const hasIncorrectLength = dataString.length < 0;
+    const dataString = data.toString().trim();
+    const stringArray = dataString.split('');
+    const hasIncorrectLength = stringArray.length === 0;
     if (hasIncorrectLength) {
-        stdout.write('Напишите не менее одного символа');
-        exit();
+        stdout.write('Напишите не менее одного символа\n');
+    } else {
+        create(dataString);
     }
-    create(dataString);
 });
 
 process.on('exit', () => {
