@@ -14,17 +14,10 @@ function init(newPath) {
     });
 };
 
-/*const readDirectory = (dir) => {
-    return fs.readdirSync(dir).reduce(function(list, file) {
-        const name = path.join(dir, file);
-        const isDir = fs.statSync(name).isDirectory();
-        return list.concat(isDir ? fileList(name) : [name]);
-      }, []);
-};*/
 
 const readDirectory = async (dir) => {
-    const dirents = await fsp.readdir(dir, { withFileTypes: true });
-    const files = await Promise.all(dirents.map((dirent) => {
+    const initials = await fsp.readdir(dir, { withFileTypes: true });
+    const files = await Promise.all(initials.map((dirent) => {
         const res = path.resolve(dir, dirent.name);
         return dirent.isDirectory() ? readDirectory(res) : res;
     }));
@@ -33,7 +26,7 @@ const readDirectory = async (dir) => {
 
 const isCss = (filepath) => {
     const arr = filepath.split('.');
-    return arr[arr.length - 1] === 'css'
+    return path.extname(filepath) === '.css';
 };
 
 const isFile = async (filepath) => {
@@ -52,6 +45,7 @@ const assemble = async (src, dist) => {
         const filepath = file;
         const isFileBoolean = await isFile(filepath);
         const isCssBoolean = isCss(filepath);
+        console.log(isFileBoolean, isCssBoolean);
         if (isFileBoolean && isCssBoolean) {
             readFile(filepath).on('data', chunk => writer.write(chunk));
         }
@@ -61,7 +55,7 @@ const assemble = async (src, dist) => {
 const checkRoute = (route) => {
     fs.access(route,fs.constants.F_OK , (err) => {
         if (err) {
-            init();
+            init(route);
         } else {
             fs.truncate(route, 0, function(){console.log('done')})
         }
