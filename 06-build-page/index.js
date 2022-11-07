@@ -3,8 +3,6 @@ const path = require('path');
 const fsp = fs.promises;
 const async = require('async');
 
-const { stdin, stdout, exit } = process;
-
 function init(newPath) {
     fs.writeFile(
         newPath,
@@ -106,14 +104,33 @@ const checkRoute = (route, type) => {
             assemble(path.resolve(__dirname, 'styles'), path.resolve(__dirname, 'project-dist'));
         }
     });
+};
+
+const readAnyFile = async (route) => {
+    return await fsp.readFile(route, { encoding: 'utf8' });
+};
+
+
+const createTemplate = async (templateRoute, assetsRoute, dest) => {
+    let templateData = await readAnyFile(templateRoute).catch ((e) => {});
+    const files = await readDirectory(assetsRoute);
+    const writer = fs.createWriteStream(dest);
+    for (const file of files) {
+        const fileName = path.parse(file).name;
+        const replaceRegex = new RegExp(`{{${fileName}}}`);
+        let content = await readAnyFile(file).catch ((e) => {});
+        templateData = templateData.replace(replaceRegex, content);
+    }
+    writer.write(templateData);
 }
+
 
 const createDir = (route) => {
     fs.mkdir(route, { recursive: true, force: true }, (error) => {
         if (error) return console.error(error.message);
-        console.log("New Directory created successfully!");
         checkRoute(path.resolve(__dirname, 'project-dist', 'style.css'), 'css');
         copyDir(path.resolve(__dirname, 'assets'), path.resolve(__dirname, 'project-dist', 'assets'));
+        createTemplate(path.resolve(__dirname, 'template.html'), path.resolve(__dirname, 'components'), path.resolve(__dirname, 'project-dist', 'index.html'));
     });
 };
 
@@ -121,7 +138,7 @@ const deleteDir = (route) => {
     fs.rm(route, { recursive: true, force: true }, err => {
         if (err) {
           throw err
-        }      
+        }
         createDir(route);
     })
 }
@@ -134,7 +151,6 @@ const checkDir = async (route) => {
         } else{
             createDir(route);
         }
-        
     });
 };
 
