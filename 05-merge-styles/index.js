@@ -25,7 +25,6 @@ const readDirectory = async (dir) => {
 }
 
 const isCss = (filepath) => {
-    const arr = filepath.split('.');
     return path.extname(filepath) === '.css';
 };
 

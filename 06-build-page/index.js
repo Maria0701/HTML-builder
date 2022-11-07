@@ -14,6 +14,51 @@ function init(newPath) {
     });
 };
 
+function copyFiles(source, target) {
+    fs.copyFile(source, target, fs.constants.COPYFILE_FICLONE, err => {
+        if (err) console.log(err);
+    });
+};
+
+const copyDir = (src, dest) => {
+    const copy = async (copySrc, copyDest) => {
+        fs.readdir(copySrc, (error, list) => {
+            if (error) return console.error(error);
+            
+            list.forEach((item) => {
+                const oldPath = path.resolve(copySrc, item);
+                fs.stat(oldPath, (err, stat) => {
+                    if (err) {
+                        return console.error(error);
+                    } else{
+                        const curSrc = path.resolve(copySrc, item);
+                        const curDest = path.resolve(copyDest, item);
+                        if (stat.isFile()) {
+                            copyFiles(curSrc, curDest);
+                        } else if (stat.isDirectory()) {                            
+                            fs.mkdir(curDest, {recursive: true},(error) => {
+                                if (error) return console.error(error.message);
+                                copy(curSrc, curDest);
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    }
+
+    fs.access(dest, err => {
+        if (err) {
+            fs.mkdir(dest, { recursive: true }, err => {
+                if (err) {
+                    return console.error(err)
+                }
+                console.log('Folder created');
+            });
+        }
+        copy(src, dest);
+    });
+};
 
 const readDirectory = async (dir) => {
     const initials = await fsp.readdir(dir, { withFileTypes: true });
@@ -25,8 +70,7 @@ const readDirectory = async (dir) => {
 }
 
 const isCss = (filepath) => {
-    const arr = filepath.split('.');
-    return path.extname(filepath) === 'css';
+    return path.extname(filepath) === '.css';
 };
 
 const isFile = async (filepath) => {
@@ -38,7 +82,7 @@ const readFile = (filepath) => {
 }
 
 const assemble = async (src, dist) => {
-    const newPath = path.join(dist, 'bundle.css');
+    const newPath = path.join(dist, 'style.css');
     const writer = fs.createWriteStream(newPath);
     const files = await readDirectory(src);
     for (const file of files) {
@@ -51,25 +95,47 @@ const assemble = async (src, dist) => {
     }
 };
 
-const checkRoute = (route, type, file) => {
+const checkRoute = (route, type) => {
     fs.access(route,fs.constants.F_OK , (err) => {
         if (err) {
-            init(file);
+            init(route);
         } else {
-            fs.truncate(route, 0, function() {
-                console.log('done');
-            });
+            fs.truncate(route, 0, function(){console.log('done')})
         }
-        if (type === 'css'){
+        if (type === 'css') {
             assemble(path.resolve(__dirname, 'styles'), path.resolve(__dirname, 'project-dist'));
         }
     });
+}
+
+const createDir = (route) => {
+    fs.mkdir(route, { recursive: true, force: true }, (error) => {
+        if (error) return console.error(error.message);
+        console.log("New Directory created successfully!");
+        checkRoute(path.resolve(__dirname, 'project-dist', 'style.css'), 'css');
+        copyDir(path.resolve(__dirname, 'assets'), path.resolve(__dirname, 'project-dist', 'assets'));
+    });
 };
 
-checkRoute(path.resolve(__dirname, 'project-dist', 'style.css'), 'css');
+const deleteDir = (route) => {
+    fs.rm(route, { recursive: true, force: true }, err => {
+        if (err) {
+          throw err
+        }      
+        createDir(route);
+    })
+}
 
-try {
-    
-  } catch (err) {
-    console.error(err);
-  }
+
+const checkDir = async (route) => {
+    fs.access(route,fs.constants.F_OK , (err) => {
+        if (!err) {
+            deleteDir(route);
+        } else{
+            createDir(route);
+        }
+        
+    });
+};
+
+checkDir(path.resolve(__dirname, 'project-dist'));

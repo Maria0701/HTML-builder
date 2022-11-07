@@ -7,27 +7,28 @@ function copyFiles(source, target) {
     });
 };
 
-const copyDir = (src, dest, callback) => {
+const copyDir = (src, dest) => {
     const copy = (copySrc, copyDest) => {
         fs.readdir(copySrc, (error, list) => {
             if (error)  {
-                callback(error);
-                return;
+                return console.error(error);
             }
             
             list.forEach((item) => {
                 const oldPath = path.resolve(copySrc, item);
                 fs.stat(oldPath, (err, stat) => {
                     if (err) {
-                        callback(err);
+                        return console.error(error);
                     } else{
                         const curSrc = path.resolve(copySrc, item);
                         const curDest = path.resolve(copyDest, item);
                         if (stat.isFile()) {
                             copyFiles(curSrc, curDest);
                         } else if (stat.isDirectory()) {
-                            fs.mkdir(curDest, {recursive: true});
-                            copy(curSrc, curDest);
+                            fs.mkdir(curDest, {recursive: true},(error) => {
+                                if (error) return console.error(error.message);
+                                copy(curSrc, curDest);
+                            });
                         }
                     }
                 });
