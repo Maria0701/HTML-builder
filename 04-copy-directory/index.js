@@ -42,10 +42,22 @@ const copyDir = (src, dest) => {
                 if (err) {
                     return console.error(err)
                 }
-                console.log('Folder created');
+                
             });
+        } else {
+            fs.rm(dest, { recursive: true, force: true }, err => {
+                if (err) {
+                    return console.error(err)
+                }
+                fs.mkdir(dest, { recursive: true }, err => {
+                    if (err) {
+                        return console.error(err)
+                    }
+                    copy(src, dest);
+                });
+            })
         }
-        copy(src, dest);
+        
     });
 };
 
