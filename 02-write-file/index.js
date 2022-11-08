@@ -19,11 +19,11 @@ function create(content) {
             if (error) return console.error(error.message);
             const currData = data.toString();
 
-            if (content === 'exit\r\n') {
+            if (content === 'exit') {
                 exit();
             }
 
-            const newData = currData + content;
+            const newData = currData + '\n' +content;
             fs.writeFile(fullPath, newData, (error) => {
                 if (error) return console.error(error.message);
                 console.log('текст записан');
