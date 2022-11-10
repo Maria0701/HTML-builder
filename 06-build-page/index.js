@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const fsp = fs.promises;
-const async = require('async');
 
 function init(newPath) {
     fs.writeFile(
