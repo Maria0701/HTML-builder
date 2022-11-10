@@ -42,7 +42,7 @@ const copyDir = (src, dest) => {
                 if (err) {
                     return console.error(err)
                 }
-                
+                copy(src, dest);                
             });
         } else {
             fs.rm(dest, { recursive: true, force: true }, err => {
